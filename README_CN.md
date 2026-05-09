@@ -1,6 +1,4 @@
-# Novel Game
-
-[English](README.md)
+# [English](README.md) | 中文
 
 Claude Code skill。将小说 txt 转为互动游戏：输入角色行动，AI 续写故事。
 

@@ -1,6 +1,4 @@
-# Novel Game
-
-[中文](README_CN.md)
+# English | [中文](README_CN.md)
 
 Claude Code skill. Turns a novel `.txt` into an interactive game: type what your character does, AI continues the story.
 
