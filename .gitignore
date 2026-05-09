@@ -1,0 +1,19 @@
+# User novel directories and game saves
+*/gamestate.json
+*/saves/
+*/turns/
+*/lore/
+
+# Reference code and personal projects
+projects/
+
+# Claude Code personal config (but keep skills symlink)
+.claude/*
+!.claude/skills/
+
+# Python
+__pycache__/
+*.pyc
+
+# Personal novel directories
+doupo/
