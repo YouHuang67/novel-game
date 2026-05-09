@@ -1,12 +1,12 @@
 # Novel Game
 
-An interactive novel game engine powered by Claude Code. Drop a novel `.txt` into the repo, type one command, and start playing as the protagonist — the AI writes the story around your every move.
+Turn any novel `.txt` into an interactive game with Claude Code. Drop in a novel, type one command, and play as the protagonist — the AI writes the story around your every move.
 
 ## Quick Start
 
 ### 1. Add your novel
 
-Create a directory at the repo root with your novel text file:
+Create a directory with your novel `.txt` at the repo root:
 
 ```
 doupo/
@@ -19,35 +19,35 @@ doupo/
 /novel-game doupo
 ```
 
-The AI auto-detects the phase:
+The AI auto-detects where you are and what to do:
 
-| State | What happens |
-|-------|-------------|
-| Only .txt, no config | Reads the full novel → extracts world, characters, power system, plot → builds lore files |
-| Config ready, no save | Shows world summary → interactive character creation → starts game |
-| Save exists | Lists saves → continue / new save / reset |
+| Novel state | What happens |
+|------------|-------------|
+| Only `.txt` | Reads the full novel → extracts world, characters, power system, plot — silently |
+| Config ready | Shows world summary → interactive character creation → starts the game |
+| Has saves | Lists saves → continue / new / reset |
 
 ### 3. Play
 
 ```
-You: Head into the魔兽山脉 to find that Purple Crystal Winged Lion
+You: Head into the mountains to find that beast
 AI:  (writes 800 words of combat scene)
-You: Turn to Yun Yun and say — come with me
+You: Turn to her and say — come with me
 AI:  (writes 600 words of dialogue)
 ```
 
-High freedom. The original novel's chapters are background reference, not a track you must follow.
+After each turn the AI summarizes where you are and suggests directions — always with a "free input" option. You're never locked into preset choices.
 
 ## Installation
 
-Clone this repo and enter it. The skill is project-scoped and activates automatically.
-
 ```bash
-git clone https://github.com/<your-username>/xiaoshuo-game.git
+git clone https://github.com/<user>/xiaoshuo-game.git
 cd xiaoshuo-game
 ```
 
-No dependencies. Just Python 3 and Claude Code.
+That's it. The skill lives in `.claude/skills/novel-game` (a relative symlink committed to the repo). Claude Code scans this directory when you enter the project — no global install, no manual linking.
+
+Requires: Python 3, Claude Code.
 
 ## Multiple Saves
 
@@ -57,26 +57,13 @@ No dependencies. Just Python 3 and Claude Code.
 /novel-game list doupo         # List all saves
 ```
 
-## How It Works
+## Design
 
-```
-Player input → Silent narrative judgment → Query lore on demand → Write 500-1500 words → Save → Loop
-```
+**Progressive disclosure.** The AI doesn't cram the entire novel into context. It uses `lore.py` to query specific topics — characters, locations, power systems — only when needed.
 
-**Progressive disclosure**: The AI doesn't load the entire novel into context. It reads a lore index first, then queries specific topics (characters, locations, power systems) only when needed.
+**Story guardian, not yes-man.** The AI enforces narrative pacing and world consistency. It pushes back when you try to skip conflicts or power-level into oblivion — but in the story's own voice, never with DM meta-talk.
 
-**The AI is a story guardian, not a yes-man.** It enforces narrative pacing and world consistency — no skipping conflicts, no infinite power-leveling montages. But it pushes back in the story's own voice, not with DM meta-talk.
-
-## File Structure
-
-```
-skills/novel-game/
-├── SKILL.md              # Skill definition
-└── scripts/
-    ├── state.py          # Save file manager
-    ├── lore.py           # Progressive disclosure tool
-    └── reference.md      # Phase instructions
-```
+**Descriptive state, not kv pairs.** Game state is natural language in `gamestate.json` — works for xianxia, VR-MMO, palace intrigue, or any genre without changing the schema.
 
 ## License
 
