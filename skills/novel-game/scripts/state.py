@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """gamestate.json manager for novel-game skill.
 
-Schema: settings {protagonist, custom} | cast | inventory | flags |
+Schema: lang | settings {protagonist, custom} | cast | inventory | flags |
         timeline [{turn, summary, player?, ref}] | meta {chapter, last_played}
 """
 
@@ -47,6 +47,7 @@ def cmd_init(args):
     state = {
         "novel": os.path.basename(os.path.abspath(args.novel_path)),
         "save": args.save or "default",
+        "lang": args.lang or "",
         "settings": {
             "protagonist": args.protagonist or "",
             "custom": args.custom or "",
@@ -87,7 +88,9 @@ def cmd_set(args):
     field = args.field
     value = args.value
 
-    if field == "protagonist":
+    if field == "lang":
+        state["lang"] = value
+    elif field == "protagonist":
         state["settings"]["protagonist"] = value
     elif field == "custom":
         state["settings"]["custom"] = value
@@ -199,6 +202,7 @@ def main():
     p_init = sub.add_parser("init")
     p_init.add_argument("novel_path")
     p_init.add_argument("--save", default=None)
+    p_init.add_argument("--lang", default="")
     p_init.add_argument("--chapter", type=int)
     p_init.add_argument("--protagonist", default="")
     p_init.add_argument("--custom", default="")

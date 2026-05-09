@@ -1,28 +1,19 @@
 # Phase Reference
 
-## Phase 1 --- 全自动构建世界观
+## Phase 1 --- Auto-build world
 
-目录下有 .txt 原文。全程静默，处理完后再对话。
+Directory has .txt only. Read all, extract everything, build lore/ and CLAUDE.md silently.
 
-1. Read 所有 .txt，完整阅读
-2. 自动提取并写入以下文件（不逐层询问）：
+After building: ask language preference via AskUserQuestion (zh/en), save to gamestate.json.
 
-lore/world.md, lore/power.md, lore/characters/protagonist.md,
-lore/characters/<name>.md, lore/characters/index.md,
-lore/factions/, lore/locations/,
-lore/plot/arcs.md, lore/plot/chapters.md, CLAUDE.md
+## Phase 2 --- First game (character creation)
 
-3. 全部完成后展示摘要，AskUserQuestion：确认 / 调整 / 补充
+If lang not set, ask language preference first. Then AskUserQuestion: starting point, protagonist extras, scene tweaks. state.py init + timeline-add turn 0.
 
-## Phase 2 --- 首次游戏（捏人）
+## Phase 3 --- Save selector
 
-AskUserQuestion 引导自定义起始点/主角设定/初始场景。
-state.py init + timeline-add turn 0，进入循环。
+Read lang from gamestate.json, auto-switch UI language. AskUserQuestion: existing saves + new + reset.
 
-## Phase 3 --- 选档
+## Rewind
 
-AskUserQuestion：已有存档 + 新存档 + 重置。
-
-## 回滚
-
-展示 timeline 最后 5 条 → AskUserQuestion → timeline-truncate。
+Show last 5 timeline entries, AskUserQuestion to pick rewind point, timeline-truncate.
