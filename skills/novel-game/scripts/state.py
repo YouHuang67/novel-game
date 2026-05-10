@@ -75,6 +75,7 @@ def cmd_load(args):
     state = _load_state(path)
     state["meta"]["last_played"] = datetime.now().isoformat()
     _save_state(path, state)
+    state["NEXT_STEP"] = "After presenting the scene, output AskUserQuestion with 3 options (last: free input)."
     print(json.dumps(state, ensure_ascii=False, indent=2))
 
 
@@ -113,10 +114,17 @@ def cmd_timeline_add(args):
         print(json.dumps({"error": f"Save not found: {path}"}))
         sys.exit(1)
 
+    guided_raw = getattr(args, "guided", None)
+    if guided_raw is None:
+        print(json.dumps({
+            "error": "MISSING --guided. Declare whether you output AskUserQuestion options after the story text. Re-run with --guided true or --guided false."
+        }, ensure_ascii=False))
+        sys.exit(1)
+    guided = guided_raw == "true"
+
     state = _load_state(path)
     turn_num = len(state["timeline"])
 
-    # Write turn content
     turns_dir = _turns_dir(args.novel_path, args.save)
     os.makedirs(turns_dir, exist_ok=True)
     ref_filename = f"{turn_num:03d}.txt"
@@ -125,7 +133,6 @@ def cmd_timeline_add(args):
         with open(ref_path, "w", encoding="utf-8") as f:
             f.write(args.content)
 
-    # Relative ref from novel root
     save_name = args.save or "default"
     rel_ref = os.path.join("turns", save_name, ref_filename)
 
@@ -140,7 +147,16 @@ def cmd_timeline_add(args):
     state["timeline"].append(entry)
     state["meta"]["last_played"] = datetime.now().isoformat()
     _save_state(path, state)
-    print(json.dumps({"ok": True, "turn": turn_num, "ref": rel_ref}, ensure_ascii=False))
+
+    if guided:
+        print(json.dumps({"ok": True, "turn": turn_num, "ref": rel_ref}, ensure_ascii=False))
+    else:
+        print(json.dumps({
+            "ok": True,
+            "turn": turn_num,
+            "ref": rel_ref,
+            "REMINDER": "CONTENT SAVED. Now output AskUserQuestion with 3 options (last one: free input). Do this BEFORE the next player message."
+        }, ensure_ascii=False))
 
 
 def cmd_timeline_truncate(args):
@@ -223,6 +239,7 @@ def main():
     p_ta = sub.add_parser("timeline-add")
     p_ta.add_argument("novel_path")
     p_ta.add_argument("--save", default=None)
+    p_ta.add_argument("--guided", default=None, choices=["true", "false"])
     p_ta.add_argument("--summary", required=True)
     p_ta.add_argument("--player", default=None)
     p_ta.add_argument("--content", default=None)
