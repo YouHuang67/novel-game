@@ -64,21 +64,27 @@ AskUserQuestion 呈现。正文写完不要停，立刻输出引导。
 
 ## 风格反馈 / Style Feedback
 
-玩家不总是在推进剧情。当输入不描述角色行动，而是对写作本身提出要求时（如"打斗写得太快"、"多写点环境"、"主角语气太软"），这是风格反馈，不是剧情行动。
+玩家不总是在推进剧情。当输入不描述角色行动，而是对写作本身提出要求时，这是风格反馈而非剧情行动。
+Not all player input advances the plot. When input discusses *how* to write rather than *what happens*, it is style feedback, not a plot action.
 
-### 识别
+### 识别 / Detection
 
-风格反馈的特征：输入内容讨论的是"怎么写"而非"发生什么"。不包含角色动作描述，而是对文字风格、节奏、细节密度、对话语气、描写角度的调整要求。
+讨论"怎么写"而非"发生什么"：文字风格、节奏、细节密度、对话语气、描写角度。
+Input about writing style, pacing, detail density, dialogue tone, or descriptive approach rather than character actions.
 
-### 处理
+### 处理 / Handling
 
-1. 更新 `<novel-name>/CLAUDE.md` 中对应章节。轻微调整追加到已有规则末尾，方向性改变则重写相关段落。**只写入小说目录下的 CLAUDE.md，禁止修改 `skills/novel-game/` 下的任何文件。skill 文件是通用引擎，不含任何特定小说的规则。**
-2. 用一句话在叙事中自然确认（融入当前场景的语境），不跳出故事解释修改了什么
-3. 紧接着按新风格输出下一段正文和引导
+1. 更新 `<novel-name>/CLAUDE.md` 对应章节。轻微调整追加，方向性改变则重写。**只写入小说目录的 CLAUDE.md，禁止修改 `skills/novel-game/` 下任何文件。skill 是通用引擎。**
+   Update `<novel-name>/CLAUDE.md`. Append minor tweaks, rewrite sections for directional changes. Never touch skill files.
+2. 用叙事中一句话自然确认，不跳出故事解释。
+   Acknowledge in one sentence within the narrative. Never break the fourth wall.
+3. 按新风格立即输出下一段正文和引导。
+   Output the next segment in the new style immediately.
 
-### 持久化
+### 持久化 / Persistence
 
-写入 `<novel-name>/CLAUDE.md`，影响该小说所有后续对话和新存档。剧情行动只影响当前存档的 timeline，风格反馈影响该小说的写作质量。skill 自身保持通用，不含任何小说特定内容。
+写入 `<novel-name>/CLAUDE.md`，影响该小说所有后续对话和新存档。skill 自身保持通用。
+Written to the novel's CLAUDE.md. Affects all future sessions and saves for that novel. The skill remains generic.
 
 ## 核心写作原则
 
