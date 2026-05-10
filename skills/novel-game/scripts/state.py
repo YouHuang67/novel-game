@@ -8,6 +8,7 @@ Schema: lang | settings {protagonist, custom} | cast | inventory | flags |
 import argparse
 import json
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -121,6 +122,31 @@ def cmd_timeline_add(args):
         }, ensure_ascii=False))
         sys.exit(1)
     guided = guided_raw == "true"
+
+    if guided:
+        guidance = getattr(args, "guidance_text", "") or ""
+        if not guidance:
+            print(json.dumps({
+                "error": "MISSING --guidance-text. When --guided true, you must pass the exact guidance text you output to the player (summary + options). Re-run with --guidance-text \"...\"."
+            }, ensure_ascii=False))
+            sys.exit(1)
+
+        has_options = bool(re.search(r'\(\d\)', guidance))
+        has_free = bool(re.search(r'自由输入|free input', guidance))
+        has_summary = len(guidance.strip().split('\n')) >= 2
+
+        if not (has_options and has_free and has_summary):
+            missing = []
+            if not has_options:
+                missing.append("numbered options like (1) (2) (3)")
+            if not has_free:
+                missing.append('free-input option ("自由输入" or "free input")')
+            if not has_summary:
+                missing.append("at least 2 lines (summary + options)")
+            print(json.dumps({
+                "error": f"GUIDANCE INCOMPLETE. Missing: {', '.join(missing)}. Re-run with complete --guidance-text."
+            }, ensure_ascii=False))
+            sys.exit(1)
 
     state = _load_state(path)
     turn_num = len(state["timeline"])
@@ -240,6 +266,7 @@ def main():
     p_ta.add_argument("novel_path")
     p_ta.add_argument("--save", default=None)
     p_ta.add_argument("--guided", default=None, choices=["true", "false"])
+    p_ta.add_argument("--guidance-text", default=None)
     p_ta.add_argument("--summary", required=True)
     p_ta.add_argument("--player", default=None)
     p_ta.add_argument("--content", default=None)

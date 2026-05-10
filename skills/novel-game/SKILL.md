@@ -130,9 +130,10 @@ python3 skills/novel-game/scripts/lore.py search <novel-name> "<kw>"
 
 python3 skills/novel-game/scripts/state.py load <path> --save <name>
 python3 skills/novel-game/scripts/state.py timeline-add <path> --save <name> \
-    --guided true --player "<text>" --summary "<text>" --content "<text>"
-# --guided 必填。true=已输出AskUserQuestion选项，false=正文已保存但需补输出选项
-# --guided is required. true=AskUserQuestion options were output, false=content saved but options still needed
+    --guided true --guidance-text "<引导文本>" \
+    --player "<text>" --summary "<text>" --content "<text>"
+# --guided 必填。true 时必须同时传 --guidance-text（你输出给玩家的引导全文，代码会校验是否含编号选项和自由输入）
+# --guided is required. When true, --guidance-text with the exact options you showed the player is also required (regex validated)
 
 python3 skills/novel-game/scripts/state.py set <path> --save <name> <field> "<value>"
 python3 skills/novel-game/scripts/state.py list <path>
