@@ -50,10 +50,12 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 每轮的完整流程，严格按此顺序：
 
-**Step 1 —— 续写正文。**
-**Step 2 —— 写引导文本（1-2 句局面总结 + 3 个编号选项，最后一个是自由输入）。**
-**Step 3 —— 将正文和引导作为一条完整消息输出给玩家，同时调用 AskUserQuestion。**
-**Step 4 —— 调用 timeline-add，带上你刚输出的引导全文（--guidance-text）。**
+**Step 1 —— 续写正文，输出给玩家。**
+**Step 2 —— 调用 save-content 保存正文。**
+**Step 3 —— 写引导文本（1-2 句局面总结 + 3 个编号选项，最后一个是自由输入），输出给玩家，同时调用 AskUserQuestion。**
+**Step 4 —— 调用 save-options --guidance-text "你刚输出的引导全文"。代码校验通过后本轮完成。**
+
+save-content 和 save-options 是两个独立命令。先保存正文，再输出选项，再保存选项。save-content 后如果不调用 save-options，下一轮 save-content 会被拒绝。
 
 引导格式：
 
@@ -138,11 +140,15 @@ python3 skills/novel-game/scripts/lore.py read <novel-name> <topic>
 python3 skills/novel-game/scripts/lore.py search <novel-name> "<kw>"
 
 python3 skills/novel-game/scripts/state.py load <path> --save <name>
-python3 skills/novel-game/scripts/state.py timeline-add <path> --save <name> \
-    --guided true --guidance-text "<引导文本>" \
+python3 skills/novel-game/scripts/state.py save-content <path> --save <name> \
     --player "<text>" --summary "<text>" --content "<text>"
-# --guided 必填。true 时必须同时传 --guidance-text（你输出给玩家的引导全文，代码会校验是否含编号选项和自由输入）
-# --guided is required. When true, --guidance-text with the exact options you showed the player is also required (regex validated)
+# Step 1: save story text. Locks until save-options is called.
+# Output AskUserQuestion options after this, then call save-options.
+
+python3 skills/novel-game/scripts/state.py save-options <path> --save <name> \
+    --guidance-text "<引导文本>"
+# Step 2: validate the guidance text you output. Must contain numbered options + free input.
+# 代码校验：编号选项(1)(2)(3) + 自由输入/free input + 至少2行。不通过则拒绝，列出缺失项。
 
 python3 skills/novel-game/scripts/state.py set <path> --save <name> <field> "<value>"
 python3 skills/novel-game/scripts/state.py list <path>

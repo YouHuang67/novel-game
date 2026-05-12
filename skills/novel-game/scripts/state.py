@@ -59,6 +59,7 @@ def cmd_init(args):
         "timeline": [],
         "meta": {
             "chapter": args.chapter or 1,
+            "pending_guidance": False,
             "created_at": datetime.now().isoformat(),
             "last_played": datetime.now().isoformat(),
         },
@@ -109,46 +110,20 @@ def cmd_set(args):
     print(json.dumps({"ok": True, "field": field}, ensure_ascii=False))
 
 
-def cmd_timeline_add(args):
+def cmd_save_content(args):
+    """Step 1: save story text. Options must be saved separately via save-options."""
     path = _resolve_path(args.novel_path, args.save)
     if not os.path.exists(path):
         print(json.dumps({"error": f"Save not found: {path}"}))
         sys.exit(1)
 
-    guided_raw = getattr(args, "guided", None)
-    if guided_raw is None:
+    state = _load_state(path)
+    if state["meta"].get("pending_guidance"):
         print(json.dumps({
-            "error": "MISSING --guided. Declare whether you output AskUserQuestion options after the story text. Re-run with --guided true or --guided false."
+            "error": "BLOCKED. Previous turn still needs AskUserQuestion options. Run save-options first, then retry save-content."
         }, ensure_ascii=False))
         sys.exit(1)
-    guided = guided_raw == "true"
 
-    if guided:
-        guidance = getattr(args, "guidance_text", "") or ""
-        if not guidance:
-            print(json.dumps({
-                "error": "MISSING --guidance-text. When --guided true, you must pass the exact guidance text you output to the player (summary + options). Re-run with --guidance-text \"...\"."
-            }, ensure_ascii=False))
-            sys.exit(1)
-
-        has_options = bool(re.search(r'\(\d\)', guidance))
-        has_free = bool(re.search(r'自由输入|free input', guidance))
-        has_summary = len(guidance.strip().split('\n')) >= 2
-
-        if not (has_options and has_free and has_summary):
-            missing = []
-            if not has_options:
-                missing.append("numbered options like (1) (2) (3)")
-            if not has_free:
-                missing.append('free-input option ("自由输入" or "free input")')
-            if not has_summary:
-                missing.append("at least 2 lines (summary + options)")
-            print(json.dumps({
-                "error": f"GUIDANCE INCOMPLETE. Missing: {', '.join(missing)}. Re-run with complete --guidance-text."
-            }, ensure_ascii=False))
-            sys.exit(1)
-
-    state = _load_state(path)
     turn_num = len(state["timeline"])
 
     turns_dir = _turns_dir(args.novel_path, args.save)
@@ -171,18 +146,60 @@ def cmd_timeline_add(args):
         entry["player"] = args.player
 
     state["timeline"].append(entry)
+    state["meta"]["pending_guidance"] = True
     state["meta"]["last_played"] = datetime.now().isoformat()
     _save_state(path, state)
 
-    if guided:
-        print(json.dumps({"ok": True, "turn": turn_num, "ref": rel_ref}, ensure_ascii=False))
-    else:
+    print(json.dumps({
+        "ok": True,
+        "turn": turn_num,
+        "ref": rel_ref,
+        "NEXT": "OUTPUT AskUserQuestion with 3 options (last: free input). Then run: state.py save-options --guidance-text '...'"
+    }, ensure_ascii=False))
+
+
+def cmd_save_options(args):
+    """Step 2: validate and save the guidance options."""
+    path = _resolve_path(args.novel_path, args.save)
+    if not os.path.exists(path):
+        print(json.dumps({"error": f"Save not found: {path}"}))
+        sys.exit(1)
+
+    state = _load_state(path)
+    if not state["meta"].get("pending_guidance"):
         print(json.dumps({
-            "ok": True,
-            "turn": turn_num,
-            "ref": rel_ref,
-            "REMINDER": "CONTENT SAVED. Now output AskUserQuestion with 3 options (last one: free input). Do this BEFORE the next player message."
+            "error": "No pending guidance. Run save-content first, output options, then save-options."
         }, ensure_ascii=False))
+        sys.exit(1)
+
+    guidance = getattr(args, "guidance_text", "") or ""
+    if not guidance:
+        print(json.dumps({
+            "error": "MISSING --guidance-text. Pass the exact guidance text you output to the player."
+        }, ensure_ascii=False))
+        sys.exit(1)
+
+    has_options = bool(re.search(r'\(\d\)', guidance))
+    has_free = bool(re.search(r'自由输入|free input', guidance))
+    has_summary = len(guidance.strip().split('\n')) >= 2
+
+    if not (has_options and has_free and has_summary):
+        missing = []
+        if not has_options:
+            missing.append("numbered options like (1) (2) (3)")
+        if not has_free:
+            missing.append('free-input option ("自由输入" or "free input")')
+        if not has_summary:
+            missing.append("at least 2 lines (summary + options)")
+        print(json.dumps({
+            "error": f"GUIDANCE INCOMPLETE. Missing: {', '.join(missing)}. Fix and re-run save-options."
+        }, ensure_ascii=False))
+        sys.exit(1)
+
+    state["meta"]["pending_guidance"] = False
+    state["meta"]["last_played"] = datetime.now().isoformat()
+    _save_state(path, state)
+    print(json.dumps({"ok": True, "turn_complete": True}, ensure_ascii=False))
 
 
 def cmd_timeline_truncate(args):
@@ -262,14 +279,17 @@ def main():
     p_set.add_argument("value")
     p_set.add_argument("--save", default=None)
 
-    p_ta = sub.add_parser("timeline-add")
-    p_ta.add_argument("novel_path")
-    p_ta.add_argument("--save", default=None)
-    p_ta.add_argument("--guided", default=None, choices=["true", "false"])
-    p_ta.add_argument("--guidance-text", default=None)
-    p_ta.add_argument("--summary", required=True)
-    p_ta.add_argument("--player", default=None)
-    p_ta.add_argument("--content", default=None)
+    p_sc = sub.add_parser("save-content")
+    p_sc.add_argument("novel_path")
+    p_sc.add_argument("--save", default=None)
+    p_sc.add_argument("--summary", required=True)
+    p_sc.add_argument("--player", default=None)
+    p_sc.add_argument("--content", default=None)
+
+    p_so = sub.add_parser("save-options")
+    p_so.add_argument("novel_path")
+    p_so.add_argument("--save", default=None)
+    p_so.add_argument("--guidance-text", default=None)
 
     p_tt = sub.add_parser("timeline-truncate")
     p_tt.add_argument("novel_path")
@@ -285,7 +305,8 @@ def main():
         "init": cmd_init,
         "load": cmd_load,
         "set": cmd_set,
-        "timeline-add": cmd_timeline_add,
+        "save-content": cmd_save_content,
+        "save-options": cmd_save_options,
         "timeline-truncate": cmd_timeline_truncate,
         "list": cmd_list,
     }
