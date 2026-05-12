@@ -46,7 +46,16 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 详见 `scripts/reference.md`。
 
-## 输出格式 / Output
+## 输出格式 / Output —— 先输出再存档
+
+每轮的完整流程，严格按此顺序：
+
+**Step 1 —— 续写正文。**
+**Step 2 —— 写引导文本（1-2 句局面总结 + 3 个编号选项，最后一个是自由输入）。**
+**Step 3 —— 将正文和引导作为一条完整消息输出给玩家，同时调用 AskUserQuestion。**
+**Step 4 —— 调用 timeline-add，带上你刚输出的引导全文（--guidance-text）。**
+
+引导格式：
 
 ```
 [续写正文]
@@ -60,7 +69,7 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 (3) 自由输入
 ```
 
-AskUserQuestion 呈现。正文写完不要停，立刻输出引导。
+正文和引导是同一轮输出的两部分，不存在先存档再补选项。选项是你写完正文后立刻写、立刻输出、立刻存档的。
 
 ## 风格反馈 / Style Feedback
 
