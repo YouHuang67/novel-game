@@ -9,45 +9,61 @@ gamestate.json、saves/、turns/ 是玩家自定义设定和情节进度，每�
 
 ## Phase 1 --- Auto-build world
 
-Directory has .txt only. Two passes over the novel, all silent.
+Directory has .txt only. Two distinct stages: deep style study by the agent, then structured extraction by scripts.
 
-### Pass 1: Deep style study (first 200K+ chars)
+### Stage 1: Deep style internalization (agent reads, no scripts)
 
-Read the first 200000 Chinese characters minimum. This is not skimming. Read carefully to internalize:
+This is the most critical stage. You, the agent, must read the first 200000 Chinese characters word by word. Not skim. Not extract bullet points. Read as a careful student of this author's craft.
 
-- Sentence rhythm: average sentence length, paragraph structure, how action and description alternate
-- Dialogue patterns: how characters speak, tone markers used, dialogue-to-narration ratio
-- Description density: how much sensory detail per scene, which senses are favored
-- Combat cadence: how fights unfold step by step, the vocabulary of power and impact
-- Transition habits: how the author moves between scenes, handles time skips, introduces new characters
-- Emotional palette: how feelings are expressed (body reactions, internal monologue, dialogue)
+What you are studying:
 
-Write these observations into CLAUDE.md as concrete writing rules with examples from the text.
+**Narrative voice and rhythm.**
+How long are the sentences? How do short and long sentences alternate within a paragraph? How does the author transition between action, description, and internal monologue? Count the beats: in a typical action paragraph, how many sentences of physical action before a sentence of reaction or reflection?
 
-### Pass 2: Full extraction
+**Dialogue craft.**
+How do characters speak? What tone markers are used (冷笑道, 淡淡道, 沉声道)? How much dialogue versus narration in a typical scene? What is the ratio of spoken words to narrative description around the dialogue? How does each major character have a DISTINCTIVE speaking pattern?
 
-After the style study, read through the complete novel and build lore/:
+**Character interiority.**
+How does the author reveal what characters are thinking and feeling? Through internal monologue? Through physical reactions (手抖, 瞳孔收缩, 呼吸急促)? Through narrated summary of emotion? Collect specific examples of how different emotions are rendered.
 
-- `lore/world.md` — world setting, rules, history
-- `lore/power.md` — power/leveling system with concrete progression data
-- `lore/characters/protagonist.md` — detailed protagonist profile with speech patterns and behavioral traits
-- `lore/characters/<name>.md` — each major character with distinctive traits and speaking style
-- `lore/characters/index.md` — quick reference
-- `lore/factions/` — organizations with hierarchy and goals
-- `lore/locations/` — key places with atmosphere notes
-- `lore/plot/arcs.md` — major story arcs with emotional stakes
-- `lore/plot/chapters.md` — chapter index with one-line summaries
-- `CLAUDE.md` — consolidated writing rules from Pass 1 observations
+**Description technique.**
+How are people described when first introduced? What details are chosen (eyes, posture, clothing, aura)? How are locations established? Which senses are used and in what proportion? How does description vary between action scenes and quiet scenes?
 
-### Pass 3: Index the full text
+**Scene construction.**
+How does a typical scene begin and end? How does the author build tension within a scene? How are multiple characters managed in a crowded scene? How are time transitions handled?
 
-Split the complete novel into chapter files under `chapters/` if not already done. This enables lore.py to read specific chapters on demand during gameplay for style reference.
+Write concrete observations with quoted examples into CLAUDE.md. These become the writing constitution for all subsequent gameplay.
 
-After building: ask language preference via AskUserQuestion (zh/en), save to gamestate.json.
+### Stage 2: Structured data extraction (scripts)
+
+After deeply internalizing the style, process the full novel to build the lore/ directory:
+
+```bash
+# Split novel into chapters for indexed retrieval
+# Extract structured data into lore/ files
+```
+
+Build these files:
+
+- `lore/world.md` — world setting with concrete rules and history
+- `lore/power.md` — complete power system with progression data, bottlenecks, breakthrough conditions
+- `lore/characters/protagonist.md` — full profile: identity, appearance, personality, speech patterns, behavioral traits, key relationships, character arc
+- `lore/characters/<name>.md` — each major character with their distinctive voice, appearance, role, and relationship to protagonist
+- `lore/characters/index.md` — quick reference list
+- `lore/factions/<name>.md` — each organization with structure, goals, key members
+- `lore/locations/<name>.md` — each key location with atmosphere, significance, and typical events
+- `lore/plot/arcs.md` — major story arcs with emotional stakes and key events
+- `lore/plot/chapters.md` — chapter-by-chapter index with one-line summaries
+
+After building, run `lore.py index` to verify.
+
+### Stage 3: Language and launch
+
+Ask language preference via AskUserQuestion (zh/en). Save to gamestate.json. Proceed to Phase 2.
 
 ## Phase 2 --- First game (character creation)
 
-If lang not set, ask language preference first. Then AskUserQuestion: starting point, protagonist extras, scene tweaks. state.py init + timeline-add turn 0.
+If lang not set, ask language preference first. Then AskUserQuestion: starting point, protagonist extras, scene tweaks. state.py init + timeline-add turn 0 with --guided true and --guidance-text.
 
 ## Phase 3 --- Save selector
 
