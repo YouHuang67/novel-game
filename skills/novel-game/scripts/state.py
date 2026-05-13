@@ -160,6 +160,14 @@ def cmd_save_content(args):
         entry["player"] = args.player
 
     state["timeline"].append(entry)
+
+    # Save thinking trace if provided
+    if getattr(args, "thinking", None):
+        think_filename = f"{turn_num:03d}_think.txt"
+        think_path = os.path.join(turns_dir, think_filename)
+        with open(think_path, "w", encoding="utf-8") as f:
+            f.write(args.thinking)
+
     state["meta"]["pending_guidance"] = True
     state["meta"]["last_played"] = datetime.now().isoformat()
     _save_state(path, state)
@@ -300,6 +308,7 @@ def main():
     p_sc.add_argument("--summary", required=True)
     p_sc.add_argument("--player", default=None)
     p_sc.add_argument("--content", default=None)
+    p_sc.add_argument("--thinking", default=None)
 
     p_so = sub.add_parser("save-options")
     p_so.add_argument("novel_path")

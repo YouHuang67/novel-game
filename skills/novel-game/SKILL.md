@@ -59,6 +59,15 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 3. 选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
 4. 然后写 turn 0 正文和引导，save-content + save-options
 
+## Thinking 记录 / Thinking Trace
+
+每轮输出正文前，先写一段内部决策摘要（3-5 句），记录：
+- 本轮玩家要求什么，你查了哪些 lore，做了哪些叙事判断
+- 为什么选择当前的场景展开方式
+- 是否拒绝了玩家的某些要求，如何转化为替代方向
+
+这段摘要**不向玩家展示**，仅在 save-content 时通过 --thinking 参数存入 `turns/<save>/NNN_think.txt`，用于事后溯源分析。
+
 ## 输出格式 / Output —— 先输出再存档
 
 每轮的完整流程，严格按此顺序：
@@ -154,8 +163,10 @@ python3 skills/novel-game/scripts/lore.py search <novel-name> "<kw>"
 
 python3 skills/novel-game/scripts/state.py load <path> --save <name>
 python3 skills/novel-game/scripts/state.py save-content <path> --save <name> \
-    --player "<text>" --summary "<text>" --content "<text>"
-# Step 1: save story text. Locks until save-options is called.
+    --player "<text>" --summary "<text>" --content "<text>" \
+    --thinking "<决策摘要>"
+# Step 1: save story text. --thinking saves a trace log of your internal decisions for debugging.
+# Locks until save-options is called.
 # Output AskUserQuestion options after this, then call save-options.
 
 python3 skills/novel-game/scripts/state.py save-options <path> --save <name> \
