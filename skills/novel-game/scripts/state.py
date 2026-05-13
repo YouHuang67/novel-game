@@ -45,12 +45,26 @@ def cmd_init(args):
         print(json.dumps({"error": f"Save already exists: {path}"}))
         sys.exit(1)
 
+    confirmed = getattr(args, "confirmed", None)
+    if confirmed != "true":
+        print(json.dumps({
+            "error": "MISSING --confirmed true. You must complete AskUserQuestion customization (language + supplementary definitions) and the player must choose 'start game' before calling init. Re-run with --confirmed true."
+        }, ensure_ascii=False))
+        sys.exit(1)
+
+    protagonist = args.protagonist or ""
+    if not protagonist.strip():
+        print(json.dumps({
+            "error": "MISSING --protagonist. You must describe the protagonist before initializing. This comes from the lore extraction, supplemented by player customization."
+        }, ensure_ascii=False))
+        sys.exit(1)
+
     state = {
         "novel": os.path.basename(os.path.abspath(args.novel_path)),
         "save": args.save or "default",
         "lang": args.lang or "",
         "settings": {
-            "protagonist": args.protagonist or "",
+            "protagonist": protagonist,
             "custom": args.custom or "",
         },
         "cast": args.cast or "",
@@ -261,6 +275,7 @@ def main():
     p_init = sub.add_parser("init")
     p_init.add_argument("novel_path")
     p_init.add_argument("--save", default=None)
+    p_init.add_argument("--confirmed", default=None)
     p_init.add_argument("--lang", default="")
     p_init.add_argument("--chapter", type=int)
     p_init.add_argument("--protagonist", default="")

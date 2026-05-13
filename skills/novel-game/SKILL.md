@@ -50,13 +50,14 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 根据结果进入对应层。
 
-**Layer 2 捏人三步（不可跳过任何一步）**：
+**Layer 2 捏人三步（不可跳过，init 有代码门禁）**：
 
 1. 介绍世界观和主角（8-12 句），只介绍主角，不罗列其他人物
-2. AskUserQuestion 三项：语言、补充定义（自由输入，不限内容）、开始游戏
-3. 玩家选"开始游戏"后才调用 state.py init 和 turn 0
+2. AskUserQuestion 三项：语言、补充定义、开始游戏。玩家选"补充定义"后继续问，直到选"开始游戏"
+3. 玩家选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
+4. 然后写 turn 0
 
-**重点**：在玩家选择"开始游戏"之前，不调用 state.py init，不写 turn 0。不存在存档就不能跳过第二步。
+**init 现在需要 --confirmed true，且 --protagonist 不能为空。跳过 AskUserQuestion 直接调 init 会被代码拒绝。**
 
 ## 输出格式 / Output —— 先输出再存档
 
