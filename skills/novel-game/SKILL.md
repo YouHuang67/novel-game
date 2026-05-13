@@ -50,7 +50,16 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 根据结果进入对应层。
 
-**Layer 2 捏人只介绍主角**，不罗列其他人物（群像多主角小说除外）。
+**Layer 2 捏人流程（必须逐项执行，不可跳过）**：
+
+1. 介绍世界观和主角（8-12 句），只介绍主角，不罗列其他人物
+2. AskUserQuestion 询问语言偏好
+3. AskUserQuestion 询问起始点调整（从哪个时间点/地点开始）
+4. AskUserQuestion 询问主角自定义（开局道具、性格偏向、特殊背景）
+5. AskUserQuestion 询问初始场景调整
+6. 全部确认后写入存档，写 turn 0
+
+语言和自定义是两次独立的 AskUserQuestion，不能合并。
 
 ## 输出格式 / Output —— 先输出再存档
 
