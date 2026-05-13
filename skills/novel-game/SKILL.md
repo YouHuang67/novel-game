@@ -29,7 +29,17 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 
 ## 启动流程 / Startup
 
-**共享与隔离**：`lore/` 和 `CLAUDE.md` 是小说提炼内容，所有存档共享。`gamestate.json`、`saves/`、`turns/` 是玩家自定义设定和情节进度，每个存档完全独立。新建存档时复用共享文件，重新走 Phase 2 完整捏人，不从其他存档复制任何内容。
+初始化分三层，详见 `scripts/reference.md`：
+
+| 层 | 触发 | 交互 | 产物 |
+|---|------|------|------|
+| Layer 1 | 目录无 CLAUDE.md | 无，全自动 | lore/ + CLAUDE.md（所有存档共享） |
+| Layer 2 | 有配置，无存档 / 新建存档 | 介绍世界观+主角，玩家自定义 | gamestate.json + turn 0（存档独立） |
+| Layer 3 | 有存档，每次新对话 | 无，自动恢复 | 重读原文恢复风格感知，加载存档 |
+
+**共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。新建存档复用共享文件，走完整 Layer 2。
+
+**每次新对话进入有存档的小说**：必须先执行 Layer 3（重读原文前 20 万字恢复风格感知），再加载存档。CLAUDE.md 规则摘要无法替代原文语感。
 
 进入 `<novel-name>` 后，静默执行：
 
@@ -38,13 +48,9 @@ ls <novel-name>/CLAUDE.md 2>/dev/null && echo "HAS_CONFIG" || echo "NO_CONFIG"
 python3 skills/novel-game/scripts/state.py list <novel-name>
 ```
 
-根据结果进入对应阶段，直接呈现给玩家的只有阶段对应的 AskUserQuestion：
+根据结果进入对应层。
 
-- NO_CONFIG: Phase 1，静默读 txt、构建 lore/、生成 CLAUDE.md，完成后展示世界观摘要
-- HAS_CONFIG + 无存档: Phase 2，展示世界观摘要，引导角色创建
-- HAS_CONFIG + 有存档: Phase 3，展示存档选择器
-
-详见 `scripts/reference.md`。
+**Layer 2 捏人只介绍主角**，不罗列其他人物（群像多主角小说除外）。
 
 ## 输出格式 / Output —— 先输出再存档
 
