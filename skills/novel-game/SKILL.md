@@ -39,7 +39,7 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 
 **共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。新建存档复用共享文件，走完整 Layer 2。
 
-**每次新对话进入有存档的小说**：必须先执行 Layer 3（重读原文前 20 万字恢复风格感知），再加载存档。CLAUDE.md 规则摘要无法替代原文语感。
+**Phase 3 进入有存档的小说**：先重读原文前 20 万字恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置），让玩家选。不直接加载默认存档。玩家选新建时走 Layer 2。
 
 进入 `<novel-name>` 后，静默执行：
 
@@ -50,11 +50,13 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 根据结果进入对应层。
 
-**Layer 2 捏人三步（必须逐项执行）**：
+**Layer 2 捏人三步（不可跳过任何一步）**：
 
 1. 介绍世界观和主角（8-12 句），只介绍主角，不罗列其他人物
-2. AskUserQuestion 三项：语言偏好、补充定义（不限制内容，玩家自由输入任何想调整的设定）、开始游戏
-3. 玩家选择"开始游戏"后写入存档，写 turn 0
+2. AskUserQuestion 三项：语言、补充定义（自由输入，不限内容）、开始游戏
+3. 玩家选"开始游戏"后才调用 state.py init 和 turn 0
+
+**重点**：在玩家选择"开始游戏"之前，不调用 state.py init，不写 turn 0。不存在存档就不能跳过第二步。
 
 ## 输出格式 / Output —— 先输出再存档
 
