@@ -50,14 +50,14 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 根据结果进入对应层。
 
-**Layer 2 捏人三步（不可跳过，init 有代码门禁）**：
+**Phase 2 铁律：不存盘不写故事。**
+
+`state.py list` 显示无存档时，执行以下流程。在玩家选"开始游戏"之前，不写任何故事正文，不输出 turn 0 选项。
 
 1. 介绍世界观和主角（8-12 句），只介绍主角，不罗列其他人物
-2. AskUserQuestion 三项：语言、补充定义、开始游戏。玩家选"补充定义"后继续问，直到选"开始游戏"
-3. 玩家选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
-4. 然后写 turn 0
-
-**init 现在需要 --confirmed true，且 --protagonist 不能为空。跳过 AskUserQuestion 直接调 init 会被代码拒绝。**
+2. AskUserQuestion：语言 / 补充定义 / 开始游戏。玩家选"补充定义"则处理后重新问，直到选"开始游戏"
+3. 选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
+4. 然后写 turn 0 正文和引导，save-content + save-options
 
 ## 输出格式 / Output —— 先输出再存档
 
