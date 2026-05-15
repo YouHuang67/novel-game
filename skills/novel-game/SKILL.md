@@ -81,24 +81,25 @@ timeline.md 必须 > 500 行。CLAUDE.md 必须 > 500 字节。all_key_events.md
 
 **共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。
 
-**Phase 2 铁律：不存盘不写故事。** 在玩家选"开始游戏"前不写故事正文。
+**Phase 2 铁律：不存盘不写故事。** 在玩家确认开始前不写故事正文。
 
 1. 介绍世界观和主角（8-12 句），只介绍主角
-2. AskUserQuestion 三项：语言 / 补充定义 / 开始游戏。选"补充定义"则处理后重新问
-3. 选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
-4. 写 turn 0，save-content + save-options
+2. 用纯文本询问玩家（不要用 AskUserQuestion）：语言偏好（zh/en）+ 有什么补充设定？直接回复"开始"进入游戏。
+3. 玩家回复后，解析其中的语言偏好和补充设定。如果玩家没明确说"开始"，确认设定后再次询问是否开始
+4. 玩家确认开始后：state.py init --confirmed true --protagonist "..." --lang ...
+5. 写 turn 0，save-content + save-options。进入游戏循环后恢复使用 AskUserQuestion。
 
 ### Phase 3 — 有存档（选档继续）
 
 读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。
 
-然后**必须展示 AskUserQuestion 存档选择器**，不直接加载默认存档：
+然后用纯文本展示存档列表（不要用 AskUserQuestion），让玩家回复编号：
 - 每个已有存档（显示章节参考、轮数、最后游玩时间）
-- 新建存档（走 Phase 2，lore 和 CLAUDE.md 复用）
+- 新建存档（走 Phase 2）
 - 重置当前存档（清空进度，保留设定）
 - 重新初始化（删除 lore/ 和 CLAUDE.md，从头走 Phase 1）
 
-选择已有存档后静默 load，恢复上下文进入循环。
+玩家回复编号后静默 load，恢复上下文进入循环。
 
 ## Thinking 记录 / Thinking Trace
 
