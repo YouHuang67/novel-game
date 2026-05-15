@@ -39,7 +39,7 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 
 **共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。新建存档复用共享文件，走完整 Layer 2。
 
-**Phase 3 进入有存档的小说**：先重读原文前 20 万字恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置），让玩家选。不直接加载默认存档。玩家选新建时走 Layer 2。
+**Phase 3 进入有存档的小说**：读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置），不直接加载默认存档。详见 reference.md。
 
 进入 `<novel-name>` 后，静默执行：
 
@@ -50,14 +50,7 @@ python3 skills/novel-game/scripts/state.py list <novel-name>
 
 根据结果进入对应层。
 
-**Phase 2 铁律：不存盘不写故事。**
-
-`state.py list` 显示无存档时，执行以下流程。在玩家选"开始游戏"之前，不写任何故事正文，不输出 turn 0 选项。
-
-1. 介绍世界观和主角（8-12 句），只介绍主角，不罗列其他人物
-2. AskUserQuestion：语言 / 补充定义 / 开始游戏。玩家选"补充定义"则处理后重新问，直到选"开始游戏"
-3. 选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
-4. 然后写 turn 0 正文和引导，save-content + save-options
+**Phase 2 铁律：不存盘不写故事。** 在玩家选"开始游戏"之前，不写任何故事正文。详见 reference.md。
 
 ## Thinking 记录 / Thinking Trace
 
