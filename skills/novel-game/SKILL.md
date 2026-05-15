@@ -112,30 +112,23 @@ timeline.md 必须 > 500 行。CLAUDE.md 必须 > 500 字节。all_key_events.md
 
 ## 输出格式 / Output —— 先输出再存档
 
-每轮的完整流程，严格按此顺序：
+每轮的完整流程：
 
 **Step 1 —— 续写正文，输出给玩家。**
 **Step 2 —— 调用 save-content 保存正文。**
-**Step 3 —— 写引导文本（1-2 句局面总结 + 3 个编号选项，最后一个是自由输入），输出给玩家，同时调用 AskUserQuestion。**
+**Step 3 —— 输出局面引导（1-2 句总结当前剧情走向，方便玩家把握上下文），不提供选项，让玩家自由回复。**
 **Step 4 —— 调用 save-options --guidance-text "你刚输出的引导全文"。代码校验通过后本轮完成。**
 
-save-content 和 save-options 是两个独立命令。先保存正文，再输出选项，再保存选项。save-content 后如果不调用 save-options，下一轮 save-content 会被拒绝。
-
-引导格式：
+格式：
 
 ```
 [续写正文]
 
 ---
-[1-2 句局面总结]
-
-接着你想:
-(1) [方向A]
-(2) [方向B]
-(3) 自由输入
+[1-2 句剧情走向总结，帮助玩家了解当前局面和可选方向，不列编号]
 ```
 
-正文和引导是同一轮输出的两部分，不存在先存档再补选项。选项是你写完正文后立刻写、立刻输出、立刻存档的。
+玩家看到总结后自由输入下一步行动。正文、分隔线、总结是同一轮输出的三部分。
 
 ## 风格反馈 / Style Feedback
 
@@ -213,8 +206,8 @@ python3 skills/novel-game/scripts/state.py save-content <path> --save <name> \
 
 python3 skills/novel-game/scripts/state.py save-options <path> --save <name> \
     --guidance-text "<引导文本>"
-# Step 2: validate the guidance text you output. Must contain numbered options + free input.
-# 代码校验：编号选项(1)(2)(3) + 自由输入/free input + 至少2行。不通过则拒绝，列出缺失项。
+# Step 2: validate the guidance text you output. Must be at least 2 lines.
+# 代码校验：至少2行。不通过则拒绝。
 
 python3 skills/novel-game/scripts/state.py set <path> --save <name> <field> "<value>"
 python3 skills/novel-game/scripts/state.py list <path>

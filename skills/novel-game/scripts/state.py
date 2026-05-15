@@ -8,7 +8,6 @@ Schema: lang | settings {protagonist, custom} | cast | inventory | flags |
 import argparse
 import json
 import os
-import re
 import sys
 from datetime import datetime
 
@@ -201,20 +200,9 @@ def cmd_save_options(args):
         }, ensure_ascii=False))
         sys.exit(1)
 
-    has_options = bool(re.search(r'\(\d\)', guidance))
-    has_free = bool(re.search(r'自由输入|free input', guidance))
-    has_summary = len(guidance.strip().split('\n')) >= 2
-
-    if not (has_options and has_free and has_summary):
-        missing = []
-        if not has_options:
-            missing.append("numbered options like (1) (2) (3)")
-        if not has_free:
-            missing.append('free-input option ("自由输入" or "free input")')
-        if not has_summary:
-            missing.append("at least 2 lines (summary + options)")
+    if len(guidance.strip().split('\n')) < 2:
         print(json.dumps({
-            "error": f"GUIDANCE INCOMPLETE. Missing: {', '.join(missing)}. Fix and re-run save-options."
+            "error": "GUIDANCE INCOMPLETE. At least 2 lines required. Fix and re-run save-options."
         }, ensure_ascii=False))
         sys.exit(1)
 
