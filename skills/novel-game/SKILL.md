@@ -39,7 +39,7 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 
 **共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。新建存档复用共享文件，走完整 Layer 2。
 
-**Phase 3 进入有存档的小说**：读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置），不直接加载默认存档。详见 reference.md。
+**Phase 3 进入有存档的小说**：读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置 + 重新初始化），不直接加载默认存档。详见 reference.md。
 
 进入 `<novel-name>` 后，静默执行：
 

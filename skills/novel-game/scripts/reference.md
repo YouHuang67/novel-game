@@ -146,6 +146,7 @@ AskUserQuestion 展示：
 - 每个已有存档（显示章节参考、轮数、最后游玩时间）
 - 开始新存档（走 Phase 2，lore 和 CLAUDE.md 复用，其他全新）
 - 重置当前存档（timeline-truncate 后走 Phase 2，保留 save name）
+- 重新初始化（删除 lore/ 和 CLAUDE.md，从头走 Phase 1 重建全部世界观。用于原文切换或之前提取不完整时）
 
 选择已有存档后，静默 load，恢复上下文（gamestate.json 的 settings + timeline），进入循环。
 
