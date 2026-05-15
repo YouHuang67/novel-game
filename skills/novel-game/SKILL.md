@@ -75,7 +75,7 @@ wc -c <novel-name>/CLAUDE.md
 
 timeline.md 必须 > 500 行。CLAUDE.md 必须 > 500 字节。all_key_events.md 必须 > 20 行。INDEX.md 必须 > 30 行。
 
-**不通过则 Phase 1 未完成。** 检查哪个产物缺失，重新执行对应步骤。全部通过后才能进入 Phase 2。
+**不通过则 Phase 1 未完成。** 删除不完整产物（rm -r <novel-name>/lore <novel-name>/CLAUDE.md <novel-name>/_batches），从头重新执行 Phase 1。全部通过后才能进入 Phase 2。重试仍失败则告知玩家"自动提取未完成，请稍后重试或手动补充 lore 文件"。
 
 ### Phase 2 — 有配置无存档（交互捏人）
 
