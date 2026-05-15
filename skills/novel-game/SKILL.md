@@ -62,7 +62,11 @@ python3 skills/novel-game/scripts/merge_synthesis.py <novel-name>/_batches --out
 ```
 验证：timeline.md > 500 行，all_key_events.md > 20 行，INDEX.md > 30 行。
 
-**Step 5** — 读原文前 20 万字，研究叙事节奏、对话风格、描写技法，写入 CLAUDE.md。
+**Step 5** — 读原文前 20 万字，研究叙事节奏、对话风格、描写技法，写入 CLAUDE.md。**必须提炼并写入以下禁令：**
+- 禁止"不是...，是..."句式（AI 味最重的标志）
+- 禁止破折号连接从句（——）
+- 禁止抽象概括战斗结果（如"碾压了对手"），必须写具体动作和身体反应
+- 原文的句式特征（短句直陈、拟声词独占行、动作紧随对话）写入作为正面范例
 
 **Step 6** — 阅读 all_key_events.md 和 timeline.md，提炼剧情弧线 → arcs.md。补充 world.md、power.md、protagonist.md、factions/、locations/。
 
@@ -87,7 +91,8 @@ timeline.md 必须 > 500 行。CLAUDE.md 必须 > 500 字节。all_key_events.md
 2. 用纯文本询问玩家（不要用 AskUserQuestion）：语言偏好（zh/en）+ 有什么补充设定？直接回复"开始"进入游戏。
 3. 玩家回复后，解析其中的语言偏好和补充设定。如果玩家没明确说"开始"，确认设定后再次询问是否开始
 4. 玩家确认开始后：state.py init --confirmed true --protagonist "..." --lang ...
-5. 写 turn 0，save-content + save-options。进入游戏循环后恢复使用 AskUserQuestion。
+5. 写 turn 0。**写之前先读 timeline.md 前 3-5 个场景**，严格对齐：人物用原文已有名字，事件按原文顺序，系统激活时机正确。不编造人物，不调整事件顺序。
+6. save-content + save-options。
 
 ### Phase 3 — 有存档（选档继续）
 
