@@ -32,11 +32,11 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 进入 `<novel-name>` 后，静默执行：
 
 ```bash
-ls <novel-name>/CLAUDE.md 2>/dev/null && echo "HAS_CONFIG" || echo "NO_CONFIG"
+ls <novel-name>/lore/plot/timeline.md 2>/dev/null && echo "HAS_TIMELINE" || echo "NO_TIMELINE"
 python3 skills/novel-game/scripts/state.py list <novel-name>
 ```
 
-### Phase 1 — 无 CLAUDE.md（全自动，不间断）
+### Phase 1 — 无 timeline.md（全自动，不间断）
 
 目录只有 .txt。依次执行，中间不停止不询问：
 
@@ -66,7 +66,16 @@ python3 skills/novel-game/scripts/merge_synthesis.py <novel-name>/_batches --out
 
 **Step 6** — 阅读 all_key_events.md 和 timeline.md，提炼剧情弧线 → arcs.md。补充 world.md、power.md、protagonist.md、factions/、locations/。
 
-完成后进入 Phase 2。
+完成后**必须验证产物**，不通过则不可进入 Phase 2：
+
+```bash
+wc -l <novel-name>/lore/plot/timeline.md <novel-name>/lore/plot/all_key_events.md <novel-name>/lore/characters/INDEX.md
+wc -c <novel-name>/CLAUDE.md
+```
+
+timeline.md 必须 > 500 行。CLAUDE.md 必须 > 500 字节。all_key_events.md 必须 > 20 行。INDEX.md 必须 > 30 行。
+
+**不通过则 Phase 1 未完成。** 检查哪个产物缺失，重新执行对应步骤。全部通过后才能进入 Phase 2。
 
 ### Phase 2 — 有配置无存档（交互捏人）
 
