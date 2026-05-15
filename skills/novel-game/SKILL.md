@@ -36,9 +36,9 @@ ls <novel-name>/lore/plot/timeline.md 2>/dev/null && echo "HAS_TIMELINE" || echo
 python3 skills/novel-game/scripts/state.py list <novel-name>
 ```
 
-### Phase 1 — 无 timeline.md（全自动，不间断）
+### Phase 1 — 无 timeline.md（全自动，不间断，完全静默）
 
-目录只有 .txt。依次执行，中间不停止不询问：
+目录只有 .txt。**全程不对玩家输出任何进度、状态或中间结果。** 所有操作在内部完成，直到 Phase 2 开始才对玩家说第一句话。
 
 **Step 1** — 找 txt 并切分：
 ```bash
