@@ -22,27 +22,31 @@ def load_batches(batch_dir):
 
 def build_timeline(batches):
     """Build unified timeline from all scene entries."""
-    lines = ["# 剧情时间线", "", "全场景按时间顺序排列。", ""]
+    lines = ["# 剧情时间线", "", "全场景按时间顺序排列，编号可被arcs交叉引用。", ""]
+    scene_idx = 0
     for b in batches:
         for s in b.get("scenes", []):
+            scene_idx += 1
             ch = s.get("chapter", "?")
             loc = s.get("location", "")
             chars = ", ".join(s.get("characters", []))
             event = s.get("event", "")
             lv = s.get("level_change", "")
             ln = s.get("lines", "")
-            lines.append("---")
-            lines.append(f"- 第{ch}章 | {loc} | {ln}")
-            lines.append(f"  人物: {chars}")
-            lines.append(f"  {event}")
+            lines.append(f"## 场景{scene_idx}")
+            lines.append(f"- 章节: 第{ch}章")
+            lines.append(f"- 地点: {loc}")
+            lines.append(f"- 行号: {ln}")
+            lines.append(f"- 人物: {chars}")
+            lines.append(f"- 事件: {event}")
             if lv:
-                lines.append(f"  等级: {lv}")
+                lines.append(f"- 等级: {lv}")
             lines.append("")
     return '\n'.join(lines)
 
 
 def build_arcs(batches):
-    """Detect map arcs from key events."""
+    """Detect map arcs from key events with timeline cross-references."""
     map_sigs = [
         ("磐石城", ["磐石城", "老虎帮", "老鼠巷", "废墟"]),
         ("黑石城", ["黑石城", "赤沙帮", "玉门镇", "方家"]),
@@ -52,17 +56,27 @@ def build_arcs(batches):
         ("太皇域/新域", ["太皇", "域城", "新域", "造化", "至尊", "神光", "神火", "神庭", "神榜"]),
     ]
 
-    lines = ["# 剧情弧线", ""]
+    # Build scene index per batch for cross-referencing
+    batch_scene_ranges = []
+    scene_offset = 0
+    for b in batches:
+        n = len(b.get("scenes", []))
+        batch_scene_ranges.append((scene_offset + 1, scene_offset + n))
+        scene_offset += n
+
+    lines = ["# 剧情弧线", "", "每条事件引用对应时间线条目(场景号=timeline.md中的场景编号)。", ""]
     for map_name, keywords in map_sigs:
-        events = []
-        for b in batches:
+        matched = []  # (event, batch_idx)
+        for bi, b in enumerate(batches):
             for e in b.get("key_events", []):
                 if any(kw in e for kw in keywords):
-                    events.append(e)
-        if events:
+                    matched.append((e, bi))
+        if matched:
             lines.append(f"## {map_name}")
-            for e in events[:8]:
-                lines.append(f"- {e}")
+            lines.append("")
+            for e, bi in matched[:10]:
+                start, end = batch_scene_ranges[bi]
+                lines.append(f"- {e} [场景{start}-{end}]")
             lines.append("")
     return '\n'.join(lines)
 
