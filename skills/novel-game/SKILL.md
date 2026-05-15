@@ -29,18 +29,6 @@ You are an interactive novel engine. Writing rules come from the novel's CLAUDE.
 
 ## 启动流程 / Startup
 
-初始化分三层，详见 `scripts/reference.md`：
-
-| 层 | 触发 | 交互 | 产物 |
-|---|------|------|------|
-| Layer 1 | 目录无 CLAUDE.md | 无，全自动 | lore/ + CLAUDE.md（所有存档共享） |
-| Layer 2 | 有配置，无存档 / 新建存档 | 介绍世界观+主角，玩家自定义 | gamestate.json + turn 0（存档独立） |
-| Layer 3 | 有存档，每次新对话 | 无，自动恢复 | 重读原文恢复风格感知，加载存档 |
-
-**共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。新建存档复用共享文件，走完整 Layer 2。
-
-**Phase 3 进入有存档的小说**：读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。然后**必须展示 AskUserQuestion 存档选择器**（已有存档 + 新建存档 + 重置 + 重新初始化），不直接加载默认存档。详见 reference.md。
-
 进入 `<novel-name>` 后，静默执行：
 
 ```bash
@@ -48,9 +36,60 @@ ls <novel-name>/CLAUDE.md 2>/dev/null && echo "HAS_CONFIG" || echo "NO_CONFIG"
 python3 skills/novel-game/scripts/state.py list <novel-name>
 ```
 
-根据结果进入对应层。
+### Phase 1 — 无 CLAUDE.md（全自动，不间断）
 
-**Phase 2 铁律：不存盘不写故事。** 在玩家选"开始游戏"之前，不写任何故事正文。详见 reference.md。
+目录只有 .txt。依次执行，中间不停止不询问：
+
+**Step 1** — 找 txt 并切分：
+```bash
+ls <novel-name>/*.txt
+python3 skills/novel-game/scripts/split_batches.py <novel-name>/<novel>.txt --batch-size 20
+python3 -c "import json; d=json.load(open('<novel-name>/_batches/index.json')); print(len(d['batches']), 'batches')"
+```
+
+**Step 2** — 读取 index.json 获取 batch 总数 N。**一次性并行启动 N 个 haiku agent**（Agent 工具，subagent_type="general-purpose"，model="haiku"，run_in_background=true），每个 agent 的 prompt：
+> Read <novel-name>/_batches/batch_NNN_prompt.md. Follow the extraction instructions at the top. Output ONLY valid JSON to <novel-name>/_batches/batch_NNN.json. No explanation.
+
+**Step 3** — 轮询等待全部完成：
+```bash
+ls <novel-name>/_batches/batch_*.json 2>/dev/null | wc -l
+```
+JSON 文件数等于 N 时完成。每个文件应 > 2000 bytes，过小则重试。
+
+**Step 4** — 合并：
+```bash
+python3 skills/novel-game/scripts/merge_synthesis.py <novel-name>/_batches --output-dir <novel-name>/lore/plot
+```
+验证：timeline.md > 500 行，all_key_events.md > 20 行，INDEX.md > 30 行。
+
+**Step 5** — 读原文前 20 万字，研究叙事节奏、对话风格、描写技法，写入 CLAUDE.md。
+
+**Step 6** — 阅读 all_key_events.md 和 timeline.md，提炼剧情弧线 → arcs.md。补充 world.md、power.md、protagonist.md、factions/、locations/。
+
+完成后进入 Phase 2。
+
+### Phase 2 — 有配置无存档（交互捏人）
+
+**共享与隔离**：lore/ 和 CLAUDE.md 所有存档共享。gamestate.json、saves/、turns/ 每个存档独立。
+
+**Phase 2 铁律：不存盘不写故事。** 在玩家选"开始游戏"前不写故事正文。
+
+1. 介绍世界观和主角（8-12 句），只介绍主角
+2. AskUserQuestion 三项：语言 / 补充定义 / 开始游戏。选"补充定义"则处理后重新问
+3. 选"开始游戏"后：state.py init --confirmed true --protagonist "..." --lang ...
+4. 写 turn 0，save-content + save-options
+
+### Phase 3 — 有存档（选档继续）
+
+读 CLAUDE.md + lore.py index + 原文前几章恢复风格感知。
+
+然后**必须展示 AskUserQuestion 存档选择器**，不直接加载默认存档：
+- 每个已有存档（显示章节参考、轮数、最后游玩时间）
+- 新建存档（走 Phase 2，lore 和 CLAUDE.md 复用）
+- 重置当前存档（清空进度，保留设定）
+- 重新初始化（删除 lore/ 和 CLAUDE.md，从头走 Phase 1）
+
+选择已有存档后静默 load，恢复上下文进入循环。
 
 ## Thinking 记录 / Thinking Trace
 
