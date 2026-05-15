@@ -4,7 +4,6 @@
 import argparse
 import json
 import os
-import re
 from collections import defaultdict
 
 
@@ -45,18 +44,8 @@ def build_timeline(batches):
     return '\n'.join(lines)
 
 
-def build_arcs(batches):
-    """Detect map arcs from key events with timeline cross-references."""
-    map_sigs = [
-        ("磐石城", ["磐石城", "老虎帮", "老鼠巷", "废墟"]),
-        ("黑石城", ["黑石城", "赤沙帮", "玉门镇", "方家"]),
-        ("十二盟会", ["十二盟会", "武盟", "白石城", "人榜", "郡城", "三拳之约"]),
-        ("洞天世界", ["洞天", "天人合一", "法天象地", "内景", "外圣", "黑魔山", "天贵山"]),
-        ("黑暗战争", ["黑暗", "黑暗世界", "百日诛魔令", "邪神"]),
-        ("太皇域/新域", ["太皇", "域城", "新域", "造化", "至尊", "神光", "神火", "神庭", "神榜"]),
-    ]
-
-    # Build scene index per batch for cross-referencing
+def build_all_events(batches):
+    """Build flat list of all key events with batch scene range refs."""
     batch_scene_ranges = []
     scene_offset = 0
     for b in batches:
@@ -64,19 +53,14 @@ def build_arcs(batches):
         batch_scene_ranges.append((scene_offset + 1, scene_offset + n))
         scene_offset += n
 
-    lines = ["# 剧情弧线", "", "每条事件引用对应时间线条目(场景号=timeline.md中的场景编号)。", ""]
-    for map_name, keywords in map_sigs:
-        matched = []  # (event, batch_idx)
-        for bi, b in enumerate(batches):
-            for e in b.get("key_events", []):
-                if any(kw in e for kw in keywords):
-                    matched.append((e, bi))
-        if matched:
-            lines.append(f"## {map_name}")
-            lines.append("")
-            for e, bi in matched[:10]:
-                start, end = batch_scene_ranges[bi]
-                lines.append(f"- {e} [场景{start}-{end}]")
+    lines = ["# 全部关键事件", "", "按batch顺序排列，每条带场景范围引用。agent在Stage 4据此提炼剧情弧线。", ""]
+    for bi, b in enumerate(batches):
+        events = b.get("key_events", [])
+        if events:
+            start, end = batch_scene_ranges[bi]
+            lines.append(f"## Batch {bi + 1} [场景{start}-{end}]")
+            for e in events:
+                lines.append(f"- {e}")
             lines.append("")
     return '\n'.join(lines)
 
@@ -86,27 +70,15 @@ def build_characters(batches):
     char_batches = defaultdict(list)
     char_events = defaultdict(list)
 
-    for b in batches:
-        batch_id = b.get("batch_id", os.path.basename(b.get("_source", "")))
+    for bi, b in enumerate(batches):
         for c in b.get("new_characters", []):
-            char_batches[c].append(batch_id)
+            char_batches[c].append(str(bi + 1))
 
     lines = ["# 人物汇总", "", f"共 {len(char_batches)} 个角色。", ""]
     # Sort by number of batch appearances (more = more important)
     sorted_chars = sorted(char_batches.items(), key=lambda x: -len(x[1]))
     for name, appearances in sorted_chars[:80]:
         lines.append(f"- **{name}** (首次: {appearances[0]})")
-    return '\n'.join(lines)
-
-
-def build_map_transitions(batches):
-    """Identify map transition events."""
-    trans_keywords = ["前往", "进入", "抵达", "踏入", "传送至", "离去", "离开", "出发"]
-    lines = ["# 地图切换", ""]
-    for b in batches:
-        for e in b.get("key_events", []):
-            if any(kw in e for kw in trans_keywords):
-                lines.append(f"- {e}")
     return '\n'.join(lines)
 
 
@@ -124,8 +96,7 @@ def main():
 
     files = {
         "timeline.md": build_timeline(batches),
-        "arcs.md": build_arcs(batches),
-        "map_transitions.md": build_map_transitions(batches),
+        "all_key_events.md": build_all_events(batches),
     }
     chars_out = os.path.join(os.path.dirname(output_base), "characters", "INDEX.md")
     os.makedirs(os.path.dirname(chars_out), exist_ok=True)
